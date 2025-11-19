@@ -1,48 +1,62 @@
 """
-Database Schemas
+Database Schemas for Vet Clinic
 
-Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
-
-Each Pydantic model represents a collection in your database.
-Model name is converted to lowercase for the collection name:
-- User -> "user" collection
-- Product -> "product" collection
-- BlogPost -> "blogs" collection
+Each Pydantic model represents a MongoDB collection.
+Collection name is the lowercase of the class name.
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 
-# Example schemas (replace with your own):
 
+class PetOwner(BaseModel):
+    full_name: str = Field(..., description="Owner full name")
+    email: str = Field(..., description="Owner email")
+    phone: str = Field(..., description="Contact phone number")
+    address: Optional[str] = Field(None, description="Street address")
+
+
+class Pet(BaseModel):
+    owner_id: Optional[str] = Field(None, description="Reference to PetOwner _id as string")
+    name: str = Field(..., description="Pet name")
+    species: str = Field(..., description="Species, e.g., Dog, Cat")
+    breed: Optional[str] = Field(None, description="Breed")
+    age_years: Optional[float] = Field(None, ge=0, description="Age in years")
+    notes: Optional[str] = Field(None, description="Medical notes or preferences")
+
+
+class Appointment(BaseModel):
+    owner_name: str = Field(..., description="Owner full name")
+    owner_email: str = Field(..., description="Owner email")
+    owner_phone: str = Field(..., description="Owner phone")
+    pet_name: str = Field(..., description="Pet name")
+    pet_species: str = Field(..., description="Pet species")
+    reason: str = Field(..., description="Visit reason")
+    preferred_date: str = Field(..., description="Preferred date (string)")
+    preferred_time: str = Field(..., description="Preferred time (string)")
+    status: str = Field("pending", description="Appointment status: pending/confirmed/cancelled")
+
+
+class ContactMessage(BaseModel):
+    name: str = Field(..., description="Sender name")
+    email: str = Field(..., description="Sender email")
+    message: str = Field(..., description="Message body")
+    subject: Optional[str] = Field("General Inquiry", description="Message subject")
+
+
+# Example schemas preserved for reference (not used by the clinic app)
 class User(BaseModel):
-    """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
-    """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+    name: str
+    email: str
+    address: str
+    age: Optional[int] = Field(None, ge=0, le=120)
+    is_active: bool = True
+
 
 class Product(BaseModel):
-    """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
-    """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
-
-# Add your own schemas here:
-# --------------------------------------------------
-
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+    title: str
+    description: Optional[str] = None
+    price: float = Field(..., ge=0)
+    category: str
+    in_stock: bool = True
